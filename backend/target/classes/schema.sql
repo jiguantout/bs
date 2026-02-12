@@ -1,0 +1,90 @@
+CREATE TABLE IF NOT EXISTS users (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    nickname VARCHAR(50),
+    avatar VARCHAR(500),
+    phone VARCHAR(20),
+    role ENUM('USER', 'ADMIN') DEFAULT 'USER',
+    points INT DEFAULT 0,
+    status TINYINT DEFAULT 1,
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS tools (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    category VARCHAR(50),
+    images VARCHAR(1000),
+    status ENUM('PENDING_REVIEW', 'APPROVED', 'REJECTED', 'AVAILABLE', 'BORROWED', 'OFFLINE') DEFAULT 'PENDING_REVIEW',
+    tool_condition VARCHAR(50),
+    location VARCHAR(200),
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS borrow_records (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    tool_id BIGINT NOT NULL,
+    borrower_id BIGINT NOT NULL,
+    owner_id BIGINT NOT NULL,
+    status ENUM('APPLIED', 'APPROVED', 'REJECTED', 'PICKED_UP', 'RETURNED') DEFAULT 'APPLIED',
+    apply_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+    approve_time DATETIME,
+    pickup_time DATETIME,
+    return_time DATETIME,
+    remark VARCHAR(500),
+    FOREIGN KEY (tool_id) REFERENCES tools(id),
+    FOREIGN KEY (borrower_id) REFERENCES users(id),
+    FOREIGN KEY (owner_id) REFERENCES users(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS reviews (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    borrow_record_id BIGINT NOT NULL,
+    reviewer_id BIGINT NOT NULL,
+    tool_id BIGINT NOT NULL,
+    rating INT NOT NULL,
+    content TEXT,
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (borrow_record_id) REFERENCES borrow_records(id),
+    FOREIGN KEY (reviewer_id) REFERENCES users(id),
+    FOREIGN KEY (tool_id) REFERENCES tools(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS point_records (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    points INT NOT NULL,
+    type ENUM('PUBLISH', 'LEND', 'BORROW', 'RETURN', 'REVIEW', 'BONUS') NOT NULL,
+    description VARCHAR(200),
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS announcements (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    admin_id BIGINT NOT NULL,
+    title VARCHAR(200) NOT NULL,
+    content TEXT,
+    status TINYINT DEFAULT 1,
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (admin_id) REFERENCES users(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS notifications (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    title VARCHAR(200),
+    content TEXT,
+    type VARCHAR(50),
+    is_read TINYINT DEFAULT 0,
+    related_id BIGINT,
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
