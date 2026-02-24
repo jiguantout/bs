@@ -43,7 +43,7 @@ public class UserService {
     @Transactional
     public User register(RegisterRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new BusinessException("Username already exists");
+            throw new BusinessException("用户名已存在");
         }
 
         User user = User.builder()

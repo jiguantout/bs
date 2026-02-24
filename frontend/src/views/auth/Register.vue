@@ -16,6 +16,15 @@
         <p class="subtitle">加入社区工具共享平台</p>
       </div>
 
+      <el-alert
+        v-if="registerError"
+        type="error"
+        :title="registerError"
+        show-icon
+        closable
+        class="register-error-alert"
+        @close="registerError = ''"
+      />
       <el-form
         ref="formRef"
         :model="form"
@@ -106,6 +115,7 @@ const userStore = useUserStore()
 
 const formRef = ref(null)
 const loading = ref(false)
+const registerError = ref('')
 
 const form = reactive({
   username: '',
@@ -149,6 +159,7 @@ const handleRegister = async () => {
   const valid = await formRef.value.validate().catch(() => false)
   if (!valid) return
 
+  registerError.value = ''
   loading.value = true
   try {
     await userStore.register({
@@ -160,7 +171,8 @@ const handleRegister = async () => {
     ElMessage.success('注册成功，请登录您的账号')
     router.push('/login')
   } catch (error) {
-    // Error already handled by axios interceptor
+    const msg = error?.message || error?.msg || '注册失败，请稍后重试'
+    registerError.value = msg
   } finally {
     loading.value = false
   }
@@ -265,6 +277,11 @@ const handleRegister = async () => {
   color: #909399;
   font-size: 14px;
   margin: 0;
+}
+
+.register-error-alert {
+  margin-bottom: 20px;
+  border-radius: 10px;
 }
 
 /* ========== Form ========== */
